@@ -70,6 +70,12 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
         //todo animate image and button
     }
 
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        webManager.shutdownClient();
+    }
+
     private void initialize(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainApplication.class.getResource("main-view.fxml"));
 
