@@ -30,12 +30,13 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import static com.sj14apps.jsonlist.core.JsonFunctions.getListFromPath;
 
@@ -46,28 +47,30 @@ public class MainApplication extends Application {
 
     public JsonData data = new JsonData();
 
-boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
-// todo   PathListAdapter pathAdapter;
-// todo   View menu, dim_bg, pathListView;
-// todo   AutoTransition autoTransition = new AutoTransition();
-// todo   Handler handler = new Handler();
+    boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
+    // todo PathListAdapter pathAdapter;
+    // todo View menu, dim_bg, pathListView;
+    // todo AutoTransition autoTransition = new AutoTransition();
+    // todo Handler handler = new Handler();
     Thread readFileThread;
     public AppState state;
-// todo   int listPrevDx = 0;
+    // todo int listPrevDx = 0;
     RawJsonView rawJsonView;
     FileManager fileManager;
     WebManager webManager;
     JsonLoader jsonLoader;
-// todo   ArrayList<String> filterList = new ArrayList<>();
-
+    
+    private com.sj14apps.jsonlist.utils.ThemeManager themeManager = new com.sj14apps.jsonlist.utils.ThemeManager();
+    // todo ArrayList<String> filterList = new ArrayList<>();
 
     @Override
     public void start(Stage stage) throws IOException {
         initialize(stage);
         LoadStateData();
+        applyTheme();
         setEvents();
 
-        //todo animate image and button
+        // todo animate image and button
     }
 
     @Override
@@ -86,24 +89,24 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
         stage.setTitle("Json List");
         stage.setScene(scene);
         stage.show();
-        stage.widthProperty().addListener((o, oldValue, newValue)->{
-            if(newValue.intValue() < 1000.0) {
+        stage.widthProperty().addListener((o, oldValue, newValue) -> {
+            if (newValue.intValue() < 1000.0) {
                 controller.mainLL.setOrientation(Orientation.VERTICAL);
-                controller.rawJsonRL.setPadding(new Insets(0,10,10,10));
-            }else {
+                controller.rawJsonRL.setPadding(new Insets(0, 10, 10, 10));
+            } else {
                 controller.mainLL.setOrientation(Orientation.HORIZONTAL);
-                controller.rawJsonRL.setPadding(new Insets(10,10,10,0));
+                controller.rawJsonRL.setPadding(new Insets(10, 10, 10, 0));
             }
         });
 
         scene.addEventFilter(MouseEvent.MOUSE_PRESSED, mouseEvent -> {
-            if(mouseEvent.getButton() == MouseButton.BACK)
+            if (mouseEvent.getButton() == MouseButton.BACK)
                 goBack();
         });
 
         stage.setMaximized(false);
 
-        //todo colors
+        // todo colors
         rawJsonView = new DesktopRawJsonView(this,
                 scene,
                 0x151B2C,
@@ -114,61 +117,139 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
         rawJsonView.showJson = true;
         rawJsonView.toggleSplitView();
 
-
         rawJsonView.updateRawJson("");
 
-        fileManager = new DesktopFileManager(stage,this);
+        fileManager = new DesktopFileManager(stage, this);
         jsonLoader = new DesktopJsonLoader(this);
         webManager = new WebManager();
 
-
-
-        //todo DragAndDrop
+        // todo DragAndDrop
 
     }
 
+    public void applyTheme() {
+        int theme = state.getTheme();
+        boolean isDark;
 
+        if (theme == 0) { // System
+            isDark = isWindowsDarkMode();
+        } else {
+            isDark = (theme == 2); // 1 = Light, 2 = Dark
+        }
+
+        // Load the appropriate XML color resource
+        String colorResource = isDark ? "values/colors-night.xml" : "values/colors.xml";
+        InputStream is = getClass().getResourceAsStream(colorResource);
+        if (is != null) {
+            themeManager.loadTheme(is);
+            themeManager.applyToScene(scene);
+        }
+
+        if (scene != null && scene.getRoot() != null) {
+            scene.getRoot().getStyleClass().remove("dark-theme");
+            if (isDark) {
+                scene.getRoot().getStyleClass().add("dark-theme");
+            }
+        }
+
+        // Update RawJsonView colors using the XML-defined values
+        rawJsonView.setColors(
+                themeManager.getColorAsInt("json_text"),
+                themeManager.getColorAsInt("json_key"),
+                themeManager.getColorAsInt("json_number"),
+                themeManager.getColorAsInt("json_boolean_null"),
+                themeManager.getColorAsInt("json_bg")
+        );
+
+        if (rawJsonView.showJson) {
+            rawJsonView.isRawJsonLoaded = false;
+            rawJsonView.ShowJSON();
+        }
+    }
+
+    private boolean isWindowsDarkMode() {
+        try {
+            Process process = Runtime.getRuntime().exec("reg query \"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\" /v AppsUseLightTheme");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains("AppsUseLightTheme") && line.contains("0x0")) {
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return false;
+    }
 
     private void setEvents() {
 
         scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE){
+            if (e.getCode() == KeyCode.ESCAPE) {
                 goBack();
             }
         });
 
-
-//        todo menuBtn.setOnClickListener(view -> open_closeMenu());
-        controller.menuBtn.setOnAction(e -> fileManager.importFromFile());
+        // Context menu for the menu button
+        javafx.scene.control.ContextMenu contextMenu = new javafx.scene.control.ContextMenu();
+        
+        javafx.scene.control.MenuItem importItem = new javafx.scene.control.MenuItem("Import File");
+        importItem.setOnAction(e -> fileManager.importFromFile());
+        
+        javafx.scene.control.Menu themeSubMenu = new javafx.scene.control.Menu("Theme");
+        javafx.scene.control.RadioMenuItem systemTheme = new javafx.scene.control.RadioMenuItem("System Theme");
+        javafx.scene.control.RadioMenuItem lightTheme = new javafx.scene.control.RadioMenuItem("Light");
+        javafx.scene.control.RadioMenuItem darkTheme = new javafx.scene.control.RadioMenuItem("Dark");
+        
+        javafx.scene.control.ToggleGroup themeGroup = new javafx.scene.control.ToggleGroup();
+        systemTheme.setToggleGroup(themeGroup);
+        lightTheme.setToggleGroup(themeGroup);
+        darkTheme.setToggleGroup(themeGroup);
+        
+        int currentTheme = (state != null) ? state.getTheme() : 0;
+        if (currentTheme == 0) systemTheme.setSelected(true);
+        else if (currentTheme == 1) lightTheme.setSelected(true);
+        else if (currentTheme == 2) darkTheme.setSelected(true);
+        
+        systemTheme.setOnAction(e -> { state.setTheme(0); applyTheme(); });
+        lightTheme.setOnAction(e -> { state.setTheme(1); applyTheme(); });
+        darkTheme.setOnAction(e -> { state.setTheme(2); applyTheme(); });
+        
+        themeSubMenu.getItems().addAll(systemTheme, lightTheme, darkTheme);
+        contextMenu.getItems().addAll(importItem, new javafx.scene.control.SeparatorMenuItem(), themeSubMenu);
+        
+        controller.menuBtn.setOnAction(e -> {
+            contextMenu.show(controller.menuBtn, javafx.geometry.Side.BOTTOM, 0, 0);
+        });
 
         controller.openFileBtn.setOnAction(e -> fileManager.importFromFile());
         controller.openUrlBtn.setOnAction(e -> controller.showLinkView());
         controller.backBtn.setOnAction(e -> goBack());
         controller.searchUrlBtn.setOnAction(e -> SearchUrl());
-        //todo openUrlBtn
+        // todo openUrlBtn
 
-        //todo titleTxt.setOnClickListener
+        // todo titleTxt.setOnClickListener
 
-        //todo pathListView.setOnClickListener(v -> showHidePathList());
+        // todo pathListView.setOnClickListener(v -> showHidePathList());
 
-        //todo urlSearch.setOnEditorActionListener
+        // todo urlSearch.setOnEditorActionListener
 
-        //todo menu.findViewById(R.id.openFileBtn2).setOnClickListener
-        //todo menu.findViewById(R.id.searchUrlBtn).setOnClickListener
-        //todo menu.findViewById(R.id.settingsBtn).setOnClickListener
-        //todo menu.findViewById(R.id.aboutBtn).setOnClickListener
-        //todo menu.findViewById(R.id.logBtn).setOnClickListener
-        //todo dim_bg.setOnClickListener(view -> open_closeMenu());
+        // todo menu.findViewById(R.id.openFileBtn2).setOnClickListener
+        // todo menu.findViewById(R.id.searchUrlBtn).setOnClickListener
+        // todo menu.findViewById(R.id.settingsBtn).setOnClickListener
+        // todo menu.findViewById(R.id.aboutBtn).setOnClickListener
+        // todo menu.findViewById(R.id.logBtn).setOnClickListener
+        // todo dim_bg.setOnClickListener(view -> open_closeMenu());
         controller.splitViewBtn.setOnAction(e -> rawJsonView.toggleSplitView());
-        //todo filterBtn.setOnClickListener(view -> filter());
+        // todo filterBtn.setOnClickListener(view -> filter());
     }
 
-
-    //todo
+    // todo
     public void LoadStateData() {
         boolean prevSH = state != null && state.isSyntaxHighlighting();
 
-        state = new AppState(); //todo FileSystem.loadStateData(this);
+        state = new AppState(); // todo FileSystem.loadStateData(this);
         state.setSyntaxHighlighting(true);
 
         if (rawJsonView.isRawJsonLoaded && prevSH != state.isSyntaxHighlighting()) {
@@ -180,7 +261,7 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
     public void loadFileIntoWebView(File file) {
         try {
-            fileManager.readFile(new FileInputStream(file),file.getName(),0,fileCallback);
+            fileManager.readFile(new FileInputStream(file), file.getName(), 0, fileCallback);
 
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -196,53 +277,54 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
     }
 
     public void open(String Title, String path, int previousPosition) {
-//   todo     TransitionManager.endTransitions(viewGroup);
-//        TransitionManager.beginDelayedTransition(viewGroup, autoTransition);
-//
-//        if (isMenuOpen)
-//            open_closeMenu();
-//
-//        if (emptyListTxt.getVisibility() == View.VISIBLE)
-//            emptyListTxt.setVisibility(View.GONE);
-//
-//
-//
-//        pathAdapter = new PathListAdapter(this,path);
-//        pathList.setAdapter(pathAdapter);
+        // todo TransitionManager.endTransitions(viewGroup);
+        // TransitionManager.beginDelayedTransition(viewGroup, autoTransition);
+        //
+        // if (isMenuOpen)
+        // open_closeMenu();
+        //
+        // if (emptyListTxt.getVisibility() == View.VISIBLE)
+        // emptyListTxt.setVisibility(View.GONE);
+        //
+        //
+        //
+        // pathAdapter = new PathListAdapter(this,path);
+        // pathList.setAdapter(pathAdapter);
         data.setPath(path);
         controller.titleTxt.setText(Title);
-        ArrayList<ListItem> arrayList = getListFromPath(path,data.getRootList());
+        ArrayList<ListItem> arrayList = getListFromPath(path, data.getRootList());
         data.setCurrentList(arrayList);
-//        updateFilterList(arrayList);
-//        adapter = new ListAdapter(arrayList, this, path);
-//        list.setAdapter(adapter);
+        // updateFilterList(arrayList);
+        // adapter = new ListAdapter(arrayList, this, path);
+        // list.setAdapter(adapter);
         controller.list.getItems().clear();
         controller.list.getItems().addAll(arrayList);
         controller.list.setCellFactory(this::ListAdapter);
-//        list.refresh();
-//
+        // list.refresh();
+        //
         if (previousPosition == -1) {
-//  todo          handler.postDelayed(() -> {
-//  todo              list.smoothScrollToPosition(data.getPreviousPos()+2);
-//  todo              adapter.setHighlightItem(data.getPreviousPos());
-//  todo          }, 500);
-//  todo          handler.postDelayed(() -> {
-//  todo              adapter.notifyItemChanged(data.getPreviousPos());
-//  todo          }, 600);
-            delay(400,() ->{
+            // todo handler.postDelayed(() -> {
+            // todo list.smoothScrollToPosition(data.getPreviousPos()+2);
+            // todo adapter.setHighlightItem(data.getPreviousPos());
+            // todo }, 500);
+            // todo handler.postDelayed(() -> {
+            // todo adapter.notifyItemChanged(data.getPreviousPos());
+            // todo }, 600);
+            delay(400, () -> {
                 highlightedItem = data.getPreviousPos();
                 controller.list.refresh();
-                controller.list.scrollTo(data.getPreviousPos()-2);
+                controller.list.scrollTo(data.getPreviousPos() - 2);
             });
-        }
-        else data.addPreviousPos(previousPosition);
-//
-//  todo      if (arrayList.isEmpty()) {
-//  todo          emptyListTxt.setVisibility(View.VISIBLE);
-//  todo      }
+        } else
+            data.addPreviousPos(previousPosition);
+        //
+        // todo if (arrayList.isEmpty()) {
+        // todo emptyListTxt.setVisibility(View.VISIBLE);
+        // todo }
         if (!path.isEmpty()) {
-          controller.showBackBtn();
-        } else controller.hideBackBtn();
+            controller.showBackBtn();
+        } else
+            controller.hideBackBtn();
 
     }
 
@@ -250,8 +332,10 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
         Task<Void> sleeper = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                try { Thread.sleep(millis); }
-                catch (InterruptedException e) { }
+                try {
+                    Thread.sleep(millis);
+                } catch (InterruptedException e) {
+                }
                 return null;
             }
         };
@@ -261,7 +345,7 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
     private void SearchUrl() {
         String url = controller.urlSearch.getText();
-        webManager.getFromUrl(url,webCallback);
+        webManager.getFromUrl(url, webCallback);
     }
 
     FileManager.FileCallback fileCallback = new FileManager.FileCallback() {
@@ -272,7 +356,7 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
                 System.out.println("ReadFile: null data");
                 return;
             }
-            jsonLoader.LoadData(data,fileName,jsonLoaderCallback); //todo thread??
+            jsonLoader.LoadData(data, fileName, jsonLoaderCallback); // todo thread??
         }
 
         @Override
@@ -288,21 +372,20 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
     JsonLoader.JsonLoaderCallback jsonLoaderCallback = new JsonLoader.JsonLoaderCallback() {
 
-
         @Override
         public void start() {
-//            loadingStarted(getString(R.string.loading_json));
-//            emptyListTxt.setVisibility(View.GONE);
+            // loadingStarted(getString(R.string.loading_json));
+            // emptyListTxt.setVisibility(View.GONE);
         }
 
         @Override
         public void started() {
-//       todo     handler.post(()-> loadingStarted(getString(R.string.creating_list)));
+            // todo handler.post(()-> loadingStarted(getString(R.string.creating_list)));
         }
 
         @Override
         public void failed() {
-//      todo      handler.post(() -> loadingFinished(false));
+            // todo handler.post(() -> loadingFinished(false));
         }
 
         @Override
@@ -311,37 +394,37 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
                 if (controller.urlView.isVisible())
                     controller.hideUrlSearchView();
 
-
                 data.setCurrentList(data.getRootList());
-//                updateFilterList(data.getRootList());
-//                pathAdapter = new PathListAdapter(MainActivity.this,data.getPath());
+                // updateFilterList(data.getRootList());
+                // pathAdapter = new PathListAdapter(MainActivity.this,data.getPath());
 
                 controller.list.getItems().clear();
                 controller.list.getItems().addAll(data.getRootList());
                 controller.list.setCellFactory(listItemListView -> ListAdapter(listItemListView));
 
-//                pathList.setAdapter(pathAdapter);
-//                fileImg.clearAnimation();
-//                openFileBtn.clearAnimation();
-//                fileImg.setVisibility(View.GONE);
+                // pathList.setAdapter(pathAdapter);
+                // fileImg.clearAnimation();
+                // openFileBtn.clearAnimation();
+                // fileImg.setVisibility(View.GONE);
                 controller.openBtns.setVisible(false);
                 controller.list.setVisible(true);
-//                functions.setAnimation(MainActivity.this,list,R.anim.scale_in2,new DecelerateInterpolator());
+                // functions.setAnimation(MainActivity.this,list,R.anim.scale_in2,new
+                // DecelerateInterpolator());
                 controller.hideBackBtn();
                 controller.titleTxt.setText("");
                 data.clearPath();
             });
 
-//            });
+            // });
         }
 
         @Override
         public void after() {
             rawJsonView.isRawJsonLoaded = false;
-            if (rawJsonView.showJson){
+            if (rawJsonView.showJson) {
                 rawJsonView.ShowJSON();
             }
-//          todo  else handler.post(() -> loadingFinished(true));
+            // todo else handler.post(() -> loadingFinished(true));
         }
     };
 
@@ -349,35 +432,35 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
         @Override
         public void onStarted() {
             controller.hideUrlSearchView();
-            //todo loading Txt
+            // todo loading Txt
             isUrlSearching = true;
         }
 
         @Override
         public void onInvalidURL() {
-            //todo onInvalidURL Txt
+            // todo onInvalidURL Txt
         }
 
         @Override
         public void onResponse(String data) {
-            //todo loading Txt
+            // todo loading Txt
             isUrlSearching = false;
 
-            jsonLoader.LoadData(data,null,jsonLoaderCallback);
+            jsonLoader.LoadData(data, null, jsonLoaderCallback);
         }
 
         @Override
         public void onFailure() {
-            //todo loading Txt
+            // todo loading Txt
             isUrlSearching = false;
-            //todo Fail Txt
+            // todo Fail Txt
         }
 
         @Override
         public void onFailure(int code) {
-            //todo loading Txt
+            // todo loading Txt
             isUrlSearching = false;
-            //todo Fail code Txt
+            // todo Fail code Txt
         }
     };
 
@@ -391,7 +474,7 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
     public int highlightedItem = -1;
 
-    //todo move to separate class
+    // todo move to separate class
     private ListCell<ListItem> ListAdapter(ListView<ListItem> lv) {
         return new ListCell<>() {
             private AnchorPane root;
@@ -412,7 +495,6 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
             protected void updateItem(ListItem item, boolean empty) {
                 super.updateItem(item, empty);
 
-
                 if (empty || item == null || item.isSpace()) {
                     setStyle("");
                     setGraphic(null);
@@ -420,6 +502,14 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
                     setStyle("");
 
+                    //
+                    //
+                    // if (item.isSpace()){
+                    //// root.getChildren().clear();
+                    //// setPrefHeight(5);
+                    //
+                    // setGraphic(null);
+                    // }
                     listController.itemVB.getChildren().clear();
 
                     if (item.getName() != null) {
@@ -427,12 +517,12 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
                         listController.itemName.setText(item.getName());
                     }
 
-                    if(!(item.isArray() || item.isObject())){
+                    if (!(item.isArray() || item.isObject())) {
                         listController.itemVB.getChildren().add(listController.itemValue);
                         listController.itemValue.setText(item.getValue());
                     }
 
-                    if (highlightedItem != -1 && highlightedItem == getIndex()){
+                    if (highlightedItem != -1 && highlightedItem == getIndex()) {
                         setStyle("-fx-background-color: yellow;");
                         resetStylePause.setOnFinished(e -> {
                             highlightedItem = -1;
@@ -441,7 +531,6 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
                         resetStylePause.play();
                     }
 
-
                     setGraphic(root);
                 }
 
@@ -449,57 +538,58 @@ boolean isMenuOpen, isTopMenuVisible, isUrlSearching, isVertical = true;
 
             @Override
             public void updateSelected(boolean b) {
-//                        super.updateSelected(b);
+                // super.updateSelected(b);
                 ListItem item = getItem();
                 if (item.isObject() || item.isArray()) {
 
-                    String newPath = data.getPath() + (data.getPath().equals("") ? "": "///" + (item.getId()!=-1?"{" + item.getId() + "}":"")) + item.getName();
-                    open(JsonData.getPathFormat(newPath),newPath,item.getPosition()!=-1?item.getPosition():getIndex());
+                    String newPath = data.getPath() + (data.getPath().equals("") ? ""
+                            : "///" + (item.getId() != -1 ? "{" + item.getId() + "}" : "")) + item.getName();
+                    open(JsonData.getPathFormat(newPath), newPath,
+                            item.getPosition() != -1 ? item.getPosition() : getIndex());
 
                 }
             }
         };
     }
 
-    public void goBack(){
-//  todo      if (pathListView.getVisibility() == View.VISIBLE){
-//  todo          showHidePathList();
-//  todo          return;
-//  todo      }
-//todo
-//  todo      if (isMenuOpen) {
-//  todo          open_closeMenu();
-//  todo          return;
-//  todo      }
-//todo
-        if (controller.urlView.isVisible()){
+    public void goBack() {
+        // todo if (pathListView.getVisibility() == View.VISIBLE){
+        // todo showHidePathList();
+        // todo return;
+        // todo }
+        // todo
+        // todo if (isMenuOpen) {
+        // todo open_closeMenu();
+        // todo return;
+        // todo }
+        // todo
+        if (controller.urlView.isVisible()) {
             controller.hideUrlSearchView();
             return;
         }
 
-//  todo      if (adapter!= null && adapter.selectedItem != -1){
-//  todo          adapter.selectedItem = -1;
-//  todo          adapter.notifyItemRangeChanged(0,adapter.getItemCount());
-//  todo          return;
-//  todo      }
-//
-        if (data.isEmptyPath()){
+        // todo if (adapter!= null && adapter.selectedItem != -1){
+        // todo adapter.selectedItem = -1;
+        // todo adapter.notifyItemRangeChanged(0,adapter.getItemCount());
+        // todo return;
+        // todo }
+        //
+        if (data.isEmptyPath()) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Exit?");
             alert.setHeaderText("Do you want to exit Json List?");
-            alert.getDialogPane().getButtonTypes().setAll(ButtonType.YES,ButtonType.NO);
+            alert.getDialogPane().getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.get() == ButtonType.YES){
+            if (result.get() == ButtonType.YES) {
                 System.exit(0);
             }
             return;
         }
-// todo       TransitionManager.endTransitions(viewGroup);
-// todo       TransitionManager.beginDelayedTransition(viewGroup, autoTransition);
+        // todo TransitionManager.endTransitions(viewGroup);
+        // todo TransitionManager.beginDelayedTransition(viewGroup, autoTransition);
         data.goBack();
-        open(JsonData.getPathFormat(data.getPath()), data.getPath(),-1);
+        open(JsonData.getPathFormat(data.getPath()), data.getPath(), -1);
 
     }
-
 
 }

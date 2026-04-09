@@ -5,13 +5,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="20.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sj14apps.jsonlist.ListItemController">
+<AnchorPane prefHeight="20.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sj14apps.jsonlist.ListItemController">
     <VBox fx:id="itemVB" spacing="5" style="-fx-padding: 3; -fx-background-radius: 20;" styleClass="listItem" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <Label fx:id="itemName" style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Item Name">
+        <Label fx:id="itemName" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: -fx-color-text-primary;" text="Item Name">
          <VBox.margin>
             <Insets left="10.0" right="10.0" />
          </VBox.margin></Label>
-        <Label fx:id="itemValue" style="-fx-font-size: 16px;" text="Item Value" wrapText="true">
+        <Label fx:id="itemValue" style="-fx-font-size: 16px; -fx-text-fill: -fx-color-text-secondary" text="Item Value" wrapText="true">
          <VBox.margin>
             <Insets left="10.0" right="10.0" />
          </VBox.margin></Label>

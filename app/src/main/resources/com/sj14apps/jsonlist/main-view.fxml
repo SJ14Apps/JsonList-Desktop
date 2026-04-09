@@ -5,19 +5,17 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.web.*?>
 
-<?import javafx.scene.text.Text?>
 <StackPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sj14apps.jsonlist.MainView">
 
-    <BorderPane fx:id="mainView">
+    <BorderPane fx:id="mainView" style="-fx-background-color: -fx-color-background;">
         <top>
             <HBox fx:id="topPanel" alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 15;">
                 <Button fx:id="backBtn" styleClass="icon-button" visible="true">
                     <graphic>
-                        <ImageView fitHeight="24.0" fitWidth="24.0">
-                            <Image url="@images/ic_back.png" />
-                        </ImageView>
+                        <fx:include source="images/ic_back_svg.fxml" />
                     </graphic>
                 </Button>
 
@@ -25,17 +23,13 @@
 
                 <Button fx:id="splitViewBtn" styleClass="icon-button">
                     <graphic>
-                        <ImageView fitHeight="24.0" fitWidth="24.0">
-                            <Image url="@images/ic_splitscreen.png" />
-                        </ImageView>
+                        <fx:include source="images/ic_splitscreen_svg.fxml" />
                     </graphic>
                 </Button>
 
                 <Button fx:id="menuBtn" styleClass="icon-button">
                     <graphic>
-                        <ImageView fitHeight="24.0" fitWidth="24.0">
-                            <Image url="@images/ic_menu.png" />
-                        </ImageView>
+                        <fx:include source="images/ic_menu_svg.fxml" />
                     </graphic>
                 </Button>
 
@@ -46,8 +40,8 @@
 
         <center>
 
-            <StackPane>
-                <SplitPane fx:id="mainLL" dividerPositions="0.5" visible="true">
+            <StackPane style="-fx-background-color: transparent">
+                <SplitPane fx:id="mainLL" dividerPositions="0.5" style="-fx-background-color: transparent;" visible="true">
                     <StackPane fx:id="listRL" minWidth="300.0" VBox.vgrow="ALWAYS">
 
                         <VBox fx:id="openBtns" alignment="CENTER" spacing="5">
@@ -70,7 +64,7 @@
                         <padding>
                             <Insets bottom="10.0" right="10.0" top="10.0" />
                         </padding>
-                        <BorderPane style="-fx-background-color: #DCE1F9; -fx-background-radius: 20;">
+                        <BorderPane styleClass="split-view-bg">
                             <padding>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                             </padding>
@@ -78,14 +72,14 @@
                                 <WebView fx:id="rawJsonWV" onScroll="#handleZoom" />
                             </center>
                         </BorderPane>
-                        <Rectangle fx:id="fullRawBtn" arcHeight="10.0" arcWidth="10.0" fill="LIGHTGRAY" height="100.0" visible="false" width="7.0" StackPane.alignment="CENTER_LEFT" />
+<!--                        <Rectangle fx:id="fullRawBtn" arcHeight="10.0" arcWidth="10.0" fill="LIGHTGRAY" height="100.0" visible="false" width="7.0" StackPane.alignment="CENTER_LEFT" />-->
                     </StackPane>
 
                 </SplitPane>
 
                 <VBox fx:id="urlView" visible="false">
                     <Text>Enter Url</Text>
-                    <TextField fx:id="urlSearch" >
+                    <TextField fx:id="urlSearch">
 
                     </TextField>
                     <Button fx:id="searchUrlBtn" text="Search" />

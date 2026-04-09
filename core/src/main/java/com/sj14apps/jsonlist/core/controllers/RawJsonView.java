@@ -2,8 +2,7 @@ package com.sj14apps.jsonlist.core.controllers;
 
 import com.sj14apps.jsonlist.core.AppState;
 
-public abstract class RawJsonView{
-
+public abstract class RawJsonView {
 
     int textColor;
     int keyColor;
@@ -14,6 +13,10 @@ public abstract class RawJsonView{
     public boolean isRawJsonLoaded;
 
     public RawJsonView(int textColor, int keyColor, int numberColor, int booleanAndNullColor, int bgColor) {
+        setColors(textColor,keyColor,numberColor,booleanAndNullColor,bgColor);
+    }
+
+    public void setColors(int textColor, int keyColor, int numberColor, int booleanAndNullColor, int bgColor) {
         this.textColor = textColor;
         this.keyColor = keyColor;
         this.numberColor = numberColor;
@@ -32,12 +35,11 @@ public abstract class RawJsonView{
         if (state != null && state.isSyntaxHighlighting())
             jsonStr = highlightJsonSyntax(jsonStr);
 
-        String style =
-                ".key { color: " + keyColorHex + "; }" +
-                        ".string { color: " + textColorHex + "; }" +
-                        ".number { color: " + numberColorHex + "; }" +
-                        ".boolean { color: " + booleanAndNullColorHex + "; }" +
-                        ".null { color: " + booleanAndNullColorHex + "; }";
+        String style = ".key { color: " + keyColorHex + "; }" +
+                ".string { color: " + textColorHex + "; }" +
+                ".number { color: " + numberColorHex + "; }" +
+                ".boolean { color: " + booleanAndNullColorHex + "; }" +
+                ".null { color: " + booleanAndNullColorHex + "; }";
 
         return "<html>" +
                 "<head>" +
@@ -65,8 +67,8 @@ public abstract class RawJsonView{
     }
 
     public abstract void toggleSplitView();
+
     public abstract void ShowJSON();
+
     public abstract void updateRawJson(String string);
 }
-
-

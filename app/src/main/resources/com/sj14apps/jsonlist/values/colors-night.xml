@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Main UI Colors (Dark mode overrides) -->
+    <color name="primary">#B2C5FF</color>
+    <color name="primary_hover">#002A79</color>
+    <color name="on_primary">#002A79</color>
+    <color name="background">#1A1B21</color>
+    <color name="surface">#2D2F39</color>
+    <color name="text_primary">#DCE1F9</color>
+    <color name="text_secondary">#A0A0A0</color>
+    
+    <!-- Split/List View Colors -->
+    <color name="split_bg">#414659</color>
+    <color name="list_item_bg">#2D2F39</color>
+    <color name="list_item_hover">rgba(255, 255, 255, 0.1)</color>
+    <color name="list_item_selected">rgba(255, 255, 255, 0.2)</color>
+    
+    <!-- Raw JSON Highlighter (Dark Mode values) -->
+    <color name="json_text">#DCE1F9</color>
+    <color name="json_key">#B2C5FF</color>
+    <color name="json_number">#E2BBDC</color>
+    <color name="json_boolean_null">#FFB4A9</color>
+    <color name="json_bg">#414659</color>
+    
+    <!-- Miscellaneous -->
+    <color name="divider">#0096F4</color>
+    <color name="scroll_thumb">#4D4C4F</color>
+</resources>

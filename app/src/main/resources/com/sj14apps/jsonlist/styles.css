@@ -1,6 +1,5 @@
-/* Global Styles */
 .root {
-    -fx-background-color: white;
+    -fx-background-color: -fx-color-background;
     -fx-font-family: "System";
     -fx-font-size: 14px;
 }
@@ -39,18 +38,26 @@
     -fx-background-color: rgba(0, 0, 0, 0.2);
 }
 
+.icon-button SVGPath {
+    -fx-fill: -fx-color-text-primary;
+}
+
+.icon-button:hover SVGPath {
+    -fx-fill: -fx-color-primary-hover;
+}
+
 /* Title Panel Styles */
 .title-text {
     -fx-font-size: 20px;
     -fx-font-weight: bold;
-
+    -fx-text-fill: -fx-color-text-primary;
 }
 
 /* Menu Styles */
 .menu-container {
-    -fx-background-color: white;
+    -fx-background-color: -fx-color-surface;
     -fx-background-radius: 10;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 5);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 10, 0, 0, 5);
     -fx-padding: 10;
     -fx-spacing: 10;
 }
@@ -80,12 +87,12 @@
 
 .empty-list-text {
     -fx-font-size: 17px;
-    -fx-text-fill: #757575;
+    -fx-text-fill: -fx-color-text-secondary;
 }
 
 /* Search URL View Styles */
 .url-search {
-    -fx-background-color: white;
+    -fx-background-color: -fx-color-surface;
     -fx-background-radius: 10;
     -fx-border-color: #CCCCCC;
     -fx-border-radius: 10;
@@ -93,7 +100,8 @@
 }
 
 .url-search:focused {
-    -fx-border-color: #2196F3; /* Material Design blue color */
+    -fx-border-color: -fx-color-primary;
+    /* Material Design blue color */
 }
 
 /* Raw JSON View Styles */
@@ -111,46 +119,50 @@
     -fx-accent: white;
 }
 
-.progress-bar > .track {
+.progress-bar>.track {
     -fx-background-color: transparent;
 }
 
-.progress-bar > .bar {
+.progress-bar>.bar {
     -fx-background-radius: 2;
     -fx-background-insets: 0;
 }
 
 /* Split View Styles */
 .split-view-bg {
-    -fx-background-color: #F5F5F5;
-    -fx-background-radius: 10;
-    -fx-border-color: #E0E0E0;
-    -fx-border-radius: 10;
+    -fx-background-color: -fx-color-split-bg;
+    -fx-background-radius: 20;
 }
 
 /* Main Application Button Styles */
-#openFileBtn, #searchUrlBtn {
-    -fx-background-color: #4A5C92; /* Material Design blue */
-    -fx-text-fill: white;
+#openFileBtn,
+#searchUrlBtn {
+    -fx-background-color: -fx-color-primary;
+    /* Material Design blue */
+    -fx-text-fill: -fx-color-on-primary;
     -fx-background-radius: 60;
     -fx-padding: 10 20 10 20;
     -fx-cursor: hand;
 
 }
 
-#openFileBtn:hover, #searchUrlBtn:hover {
-    -fx-background-color: #B3C5FF; /* Darker blue */
+#openFileBtn:hover,
+#searchUrlBtn:hover {
+    -fx-background-color: -fx-color-primary-hover;
+    /* Darker blue */
     -fx-text-fill: black;
 }
 
-#openFileBtn:pressed,#searchUrlBtn:pressed {
-    -fx-background-color: #ffffff; /* Darker blue */
+#openFileBtn:pressed,
+#searchUrlBtn:pressed {
+    -fx-background-color: #ffffff;
+    /* Darker blue */
     -fx-text-fill: black;
 }
 
 #openUrlBtn {
     -fx-background-color: transparent;
-    -fx-text-fill: #1A1B21;
+    -fx-text-fill: -fx-color-text-primary;
     -fx-border-color: transparent;
     -fx-padding: 10 20 10 20;
     -fx-cursor: hand;
@@ -158,7 +170,7 @@
 }
 
 #openUrlBtn:hover {
-    -fx-background-color: #B3C5FF;
+    -fx-background-color: -fx-color-primary-hover;
 }
 
 /* Filter Button Styles */
@@ -220,23 +232,25 @@
     -fx-background-color: #ff0000;
 }
 
-.split-pane:horizontal > .split-pane-divider {
-    -fx-background-color: #0096f4;
+.split-pane:horizontal>.split-pane-divider {
+    -fx-background-color: -fx-color-primary;
     -fx-background-insets: 100 2 100 2;
     -fx-background-radius: 20;
     -fx-padding: 6;
 
 }
-.split-pane:vertical > .split-pane-divider {
-       -fx-background-color: #0096f4;
-       -fx-background-insets: 2 100 2 100;
-       -fx-background-radius: 20;
-       -fx-padding: 6;
+
+.split-pane:vertical>.split-pane-divider {
+    -fx-background-color: -fx-color-primary;
+    -fx-background-insets: 2 100 2 100;
+    -fx-background-radius: 20;
+    -fx-padding: 6;
 }
 
 
-.split-pane:horizontal > .split-pane-divider:hover,.split-pane:vertical > .split-pane-divider:hover {
-    -fx-background-color: #23232323;
+.split-pane:horizontal>.split-pane-divider:hover,
+.split-pane:vertical>.split-pane-divider:hover {
+    -fx-background-color: -fx-color-primary-hover;
 
 }
 
@@ -244,8 +258,78 @@
 
 WebView {
     -fx-border-radius: 20;
-    -fx-background-color: #DCE1F9;
+    -fx-background-color: -fx-color-split-bg;
 }
+
 .listItem {
-    -fx-background-color: #E2E2EC;
+    -fx-background-color: -fx-color-list-item-bg;
+}
+
+
+.scroll-bar:horizontal .track,
+.scroll-bar:vertical .track {
+    -fx-background-color: -fx-color-background;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0.0em;
+    -fx-border-radius: 20px;
+}
+
+WebView .scroll-bar:horizontal .track,
+WebView .scroll-bar:vertical .track {
+    -fx-background-color: -fx-color-split-bg;
+}
+
+.scroll-bar:horizontal .increment-button,
+.scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0.0em;
+    -fx-padding: 0.0 0.0 10.0 0.0;
+
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0.0em;
+    -fx-padding: 0.0 10.0 0.0 0.0;
+
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0.15em 0.0;
+}
+
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0.0 0.15em;
+}
+
+.scroll-bar:horizontal .thumb,
+.scroll-bar:vertical .thumb {
+    -fx-background-color: derive(black, 90.0%);
+    -fx-background-insets: 2.0, 0.0, 0.0;
+    -fx-background-radius: 2.0em;
+}
+
+.scroll-bar:horizontal .thumb:hover,
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: derive(#4D4C4F, 10.0%);
+    -fx-background-insets: 2.0, 0.0, 0.0;
+    -fx-background-radius: 2.0em;
+}
+
+scroll-bar:vertical .thumb {
+    -fx-background-color: derive(black, 90.0%);
+    -fx-background-insets: 2.0, 0.0, 0.0;
+    -fx-background-radius: 2.0em;
+}
+
+.scroll-bar:horizontal .thumb:hover,
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: derive(#4D4C4F, 10.0%);
+    -fx-background-insets: 2.0, 0.0, 0.0;
+    -fx-background-radius: 2.0em;
 }
